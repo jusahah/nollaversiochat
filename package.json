@@ -1,0 +1,22 @@
+{
+  "name": "chat_node",
+  "version": "1.0.0",
+  "description": "Server-side system for Nollaversio Entrepreneur Chat",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jusahah/nollaversiochat.git"
+  },
+  "keywords": [
+    "chat"
+  ],
+  "author": "Jussi Hamalainen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jusahah/nollaversiochat/issues"
+  },
+  "homepage": "https://github.com/jusahah/nollaversiochat#readme"
+}
