@@ -93,12 +93,17 @@ function InternetLayer(mediator) {
 					*/
 				}
 
+				var res = this.mediator.userJoined(id, identificationObject.sitekey, socket.isEntrepreneur);
+				if (!res) {
+					socket.emit('siteNotSupported');
+					return;
+				}
+
 				this.namesToSocketsTable[id] = socket;
 				// Attach rest of the relevant info directly to socket itself
 				socket.nollaversioClientID = id;
 				socket.nollaversioSitekey  = identificationObject.sitekey;
-				socket.initializationDone  = true;
-
+				socket.initializationDone  = true;				
 				socket.emit('welcomeIn', {id: id, sitekey: identificationObject.sitekey, isEntrepreneur: socket.isEntrepreneur});
 
 
@@ -114,14 +119,14 @@ function InternetLayer(mediator) {
 				socket.emit('identifyYourSelf');
 				return false; // Just ditch the message
 
-				this.mediator.msgFromSocket(socket.nollaversioClientID, socket.nollaversioSitekey, msgObj);
+				this.mediator.msgFromSocket(socket.nollaversioClientID, socket.nollaversioSitekey, socket.isEntrepreneur, msgObj);
 			}
 
 
 		}.bind(this));
 
 		socket.on('disconnect', function() {
-			this.mediator.socketDisconnected(socket.nollaversioClientID);
+			this.mediator.userDisconnected(socket.nollaversioClientID, socket.nollaversioSitekey, socket.isEntrepreneur);
 		}.bind(this));
 	}
 }

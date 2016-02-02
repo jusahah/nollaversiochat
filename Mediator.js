@@ -11,13 +11,13 @@ function Mediator(logger) {
 		this.layers.domain.init();
 	}
 
-	this.registerLayers = function(layers) {
-		this.layers = layers;
+	this.validateSecret = function(siteKey, siteSecret) {
+		// Always validated straight in data layer
+		return this.layers.data.validateSecret(siteKey, siteSecret);
 	}
 
-	this.socketDisconnected = function(clientID) {
-		this.logInfo('User left: ' + clientID);		
-		this.layers.domain.gateway({tag: 'userLeft', from: clientID});
+	this.registerLayers = function(layers) {
+		this.layers = layers;
 	}
 
 	this.sendMsgToUserName = function(msgObj, toUserName) {
@@ -26,9 +26,9 @@ function Mediator(logger) {
 
 	}
 
-	this.msgFromSocket = function(romUserName, toSite, msgObj) {
+	this.msgFromSocket = function(fromUserName, toSite, isEntrepreneur, msgObj) {
 		this.logInfo('Msg from: ' + fromUserName + " | Contents: " + JSON.stringify(msgObj));
-		this.layers.domain.gateway({tag: 'msgFromUser', from: fromUserName, msgObj: msgObj});
+		return this.layers.domain.gateway({tag: 'msgFromUser', from: fromUserName, isEntrepreneur: isEntrepreneur, msgObj: msgObj});
 
 	}
 
@@ -62,6 +62,14 @@ function Mediator(logger) {
 
 	this.needRoutingDataFromDisk = function() {
 
+	}
+
+	this.userJoined = function(userID, siteKey, isEntrepreneur) {
+		return this.layers.domain.gateway({tag: 'userJoined', from: userID, siteKey: siteKey, isEntrepreneur: isEntrepreneur});
+
+	}
+	this.userDisconnected = function(userID, siteKey, isEntrepreneur) {
+		return this.layers.domain.gateway({tag: 'userLeft', from: userID, siteKey: siteKey, isEntrepreneur: isEntrepreneur});
 	}
 
 }
