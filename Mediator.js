@@ -57,6 +57,7 @@ function Mediator(logger) {
 	}
 
 	this.needSiteKeysFromDisk = function() {
+		return this.layers.data.needSiteKeysFromDisk();
 
 	}
 
@@ -84,6 +85,8 @@ module.exports = function(logger, testMode) {
 		mediator.needRoutingDataFromDisk = needRoutingDataFromDiskFake;
 
 	}
+
+	return mediator;
 }
 
 function needSiteKeysFromDiskFake() {

@@ -49,6 +49,10 @@ function InternetLayer(mediator) {
 
 	this.init = function() {
 		io.on('connection', function(socket) {
+			console.log("CONNECTION IN");
+			socket.on('reconnect', function() {
+				console.log("RECONNECT IN SERVER");
+			});
 			socket.on('userIdentification', function(identificationObject) {
 				if (!identificationObject.clientID) {
 					// Client has no clientID yet
@@ -109,25 +113,27 @@ function InternetLayer(mediator) {
 
 			}.bind(this));
 
+			socket.on('incomingMsg', function(msgObj) {
+				if (!socket.initializationDone) {
+					this.mediator.logWarning('Socket tries to send msg before initializationDone: ' + JSON.stringify(msgObj));
+					socket.emit('identifyYourSelf');
+					return false; // Just ditch the message
+
+					this.mediator.msgFromSocket(socket.nollaversioClientID, socket.nollaversioSitekey, socket.isEntrepreneur, msgObj);
+				}
+
+
+			}.bind(this));
+
+			socket.on('disconnect', function() {
+				this.mediator.userDisconnected(socket.nollaversioClientID, socket.nollaversioSitekey, socket.isEntrepreneur);
+			}.bind(this));
+
 			socket.emit('identifyYourSelf');
 
 		}.bind(this));
 
-		socket.on('incomingMsg', function(msgObj) {
-			if (!socket.initializationDone) {
-				this.mediator.logWarning('Socket tries to send msg before initializationDone: ' + JSON.stringify(msgObj));
-				socket.emit('identifyYourSelf');
-				return false; // Just ditch the message
 
-				this.mediator.msgFromSocket(socket.nollaversioClientID, socket.nollaversioSitekey, socket.isEntrepreneur, msgObj);
-			}
-
-
-		}.bind(this));
-
-		socket.on('disconnect', function() {
-			this.mediator.userDisconnected(socket.nollaversioClientID, socket.nollaversioSitekey, socket.isEntrepreneur);
-		}.bind(this));
 	}
 }
 
