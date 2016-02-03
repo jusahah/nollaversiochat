@@ -28,7 +28,8 @@ function Mediator(logger) {
 
 	this.msgFromSocket = function(fromUserName, toSite, isEntrepreneur, msgObj) {
 		this.logInfo('Msg from: ' + fromUserName + " | Contents: " + JSON.stringify(msgObj));
-		return this.layers.domain.gateway({tag: 'msgFromUser', from: fromUserName, isEntrepreneur: isEntrepreneur, msgObj: msgObj});
+		msgObj.from = fromUserName;
+		return this.layers.domain.gateway({tag: 'msgFromUser', siteKey: toSite, from: fromUserName, isEntrepreneur: isEntrepreneur, msgObj: msgObj});
 
 	}
 

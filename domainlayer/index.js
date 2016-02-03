@@ -5,7 +5,7 @@ var schemaForMsg = Joi.object().keys({
 	isEntrepreneur: Joi.boolean().required(),
 	siteKey: Joi.string().alphanum().min(8).max(8).required(),
 	from: Joi.string().min(10).max(80).required(),
-	msg: Joi.object(),
+	msgObj: Joi.object(),
 	tag: Joi.string().alphanum().min(1).max(128).required()
 });
 
@@ -72,7 +72,7 @@ function DomainLayer(mediator) {
 		var userID = commandObject.from;
 		var siteKey = commandObject.siteKey;
 		var isEntrepreneur = commandObject.isEntrepreneur;
-		var msg    = commandObject.msg;
+		var msg    = commandObject.msgObj;
 
 		switch(commandObject.tag) {
 		    case 'userLeft':

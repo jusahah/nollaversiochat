@@ -54,7 +54,7 @@ function InternetLayer(mediator) {
 				console.log("RECONNECT IN SERVER");
 			});
 			socket.on('userIdentification', function(identificationObject) {
-				if (!identificationObject.clientID) {
+				if (!identificationObject.clientID || identificationObject.clientID == 0) {
 					// Client has no clientID yet
 
 					if (identificationObject.sitesecret) {
@@ -85,8 +85,22 @@ function InternetLayer(mediator) {
 					}
 
 				} else {
-					this.mediator.logWarning('User identification object contains clientID -> should not contain as feature is not implemented yet');
-					return; // Unsupported as of 2.2.2016 -> developer later this reconnecting feature
+					// We need this to work
+					// When server crashes, client must remember its clientID so that
+					// when server comes up and new (re)connection is made, client can provide that 
+					// for socket creation
+					if (identificationObject.sitesecret) {
+						// Only clients need to provide clientID
+						this.mediator.logWarning('Client ID and siteSecret must not be in a same identification msg: ' + identificationObject.clientID);
+						return false;
+					}
+					// He tries to identify as client which is correct
+					socket.isEntrepreneur = false;
+					var id = identificationObject.clientID;
+					// That is it! Now rest of the layers know how to handle this socket's messages
+					
+					//this.mediator.logWarning('User identification object contains clientID -> should not contain as feature is not implemented yet');
+					//return; // Unsupported as of 2.2.2016 -> developer later this reconnecting feature
 					// Already has clientID
 					/*
 					if (this.namesToSocketsTable.hasOwnProperty(identificationObject.clientID)) {
@@ -114,13 +128,13 @@ function InternetLayer(mediator) {
 			}.bind(this));
 
 			socket.on('incomingMsg', function(msgObj) {
+				console.log("MSG IN");
 				if (!socket.initializationDone) {
 					this.mediator.logWarning('Socket tries to send msg before initializationDone: ' + JSON.stringify(msgObj));
 					socket.emit('identifyYourSelf');
 					return false; // Just ditch the message
-
-					this.mediator.msgFromSocket(socket.nollaversioClientID, socket.nollaversioSitekey, socket.isEntrepreneur, msgObj);
-				}
+				} 
+				this.mediator.msgFromSocket(socket.nollaversioClientID, socket.nollaversioSitekey, socket.isEntrepreneur, msgObj);
 
 
 			}.bind(this));
