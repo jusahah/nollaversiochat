@@ -8,10 +8,12 @@ function Site(sitekey, mediator) {
 	this.clients = [];
 
 	this.msgInFromClient = function(msg, clientID) {
+		msg.stamp = Date.now();
 		if (this.hasEntrepreneur()) {
 			this.mediator.sendMsgToUserName(msg, this.getEntrepreneur());
 			return true;
 		}
+		this.mediator.sendMsgToUserName({tag: 'messageFailed', id: msg.id}, clientID);
 		return false;
 	}
 
@@ -19,6 +21,18 @@ function Site(sitekey, mediator) {
 		this.clients.push(userName);
 		this.mediator.logInfo('Client ' + userName + ' joined site object ' + this.sitekey);
 		this.mediator.logInfo('Clients currently: ' + this.clients.join(', '));
+
+		// Must be done async so socket table gets time to initialize itself
+		setTimeout(function() {
+			if (this.hasEntrepreneur()) {
+				this.mediator.sendMsgToUserName({tag: 'entrepreneurJoined', sitekey: this.sitekey}, userName);
+			} else {
+				this.mediator.sendMsgToUserName({tag: 'noEntrepreneursAvailable', sitekey: this.sitekey}, userName);
+
+			}
+		}.bind(this), 0);
+
+		
 
 	}
 

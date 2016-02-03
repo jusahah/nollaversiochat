@@ -128,6 +128,7 @@ function DomainLayer(mediator) {
 
 	}
 	this.msgFromUser = function(userID, siteKey, isEntrepreneur, msg) {
+		msg.stamp = Date.now();
 		if (isEntrepreneur) {
 			// Msg contains routing info
 			var clientID = msg.clientID;

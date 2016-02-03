@@ -1,6 +1,10 @@
 var app = require('http').createServer(handler)
 var io = require('socket.io')(app);
 var fs = require('fs');
+var validator = require('validator');
+var _ = require('lodash');
+
+var rateLimiter = require('./socketMsgRateLimiter')();
 
 app.listen(8090);
 
@@ -85,6 +89,10 @@ function InternetLayer(mediator) {
 					}
 
 				} else {
+					if (identificationObject.clientID.length > 128) {
+						// Way too long, somethings wrong.
+						return;
+					}
 					// We need this to work
 					// When server crashes, client must remember its clientID so that
 					// when server comes up and new (re)connection is made, client can provide that 
@@ -96,7 +104,7 @@ function InternetLayer(mediator) {
 					}
 					// He tries to identify as client which is correct
 					socket.isEntrepreneur = false;
-					var id = identificationObject.clientID;
+					var id = validator.escape(identificationObject.clientID);
 					// That is it! Now rest of the layers know how to handle this socket's messages
 					
 					//this.mediator.logWarning('User identification object contains clientID -> should not contain as feature is not implemented yet');
@@ -128,18 +136,34 @@ function InternetLayer(mediator) {
 			}.bind(this));
 
 			socket.on('incomingMsg', function(msgObj) {
+
+				if (!rateLimiter.incomingMsg(socket.nollaversioClientID)) {
+					// Too high message rate, bail out
+					socket.emit('rateLimitViolation', msgObj.clientID);
+					console.log("RATE LIMIT");
+					return false;
+				}
+
+
+
 				console.log("MSG IN");
 				if (!socket.initializationDone) {
 					this.mediator.logWarning('Socket tries to send msg before initializationDone: ' + JSON.stringify(msgObj));
 					socket.emit('identifyYourSelf');
 					return false; // Just ditch the message
 				} 
+				// Do msg sanitization and validation here!
+				msgObj.msg = validator.escape(msgObj.msg);
+				msgObj.msg = _.truncate(msgObj.msg, {
+					length: '512'
+				});
 				this.mediator.msgFromSocket(socket.nollaversioClientID, socket.nollaversioSitekey, socket.isEntrepreneur, msgObj);
-
+				socket.emit('msgFromServer', {msg: msgObj.msg, msgType: 'confirm', msgID: msgObj.id, stamp: Date.now()});
 
 			}.bind(this));
 
 			socket.on('disconnect', function() {
+				rateLimiter.deleteClientData(socket.nollaversioClientID);
 				this.mediator.userDisconnected(socket.nollaversioClientID, socket.nollaversioSitekey, socket.isEntrepreneur);
 			}.bind(this));
 
