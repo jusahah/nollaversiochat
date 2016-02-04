@@ -136,7 +136,7 @@ function InternetLayer(mediator) {
 			}.bind(this));
 
 			socket.on('incomingMsg', function(msgObj) {
-
+				console.log(msgObj);
 				if (!rateLimiter.incomingMsg(socket.nollaversioClientID)) {
 					// Too high message rate, bail out
 					socket.emit('rateLimitViolation', msgObj.clientID);
@@ -154,9 +154,13 @@ function InternetLayer(mediator) {
 				} 
 				// Do msg sanitization and validation here!
 				msgObj.msg = validator.escape(msgObj.msg);
+				msgObj.fromEntrepreneur = validator.escape(msgObj.fromEntrepreneur);
 				msgObj.msg = _.truncate(msgObj.msg, {
 					length: '512'
 				});
+				msgObj.fromEntrepreneur = _.truncate(msgObj.fromEntrepreneur, {
+					length: '12'
+				});				
 				this.mediator.msgFromSocket(socket.nollaversioClientID, socket.nollaversioSitekey, socket.isEntrepreneur, msgObj);
 				socket.emit('msgFromServer', {msg: msgObj.msg, msgType: 'confirm', msgID: msgObj.id, stamp: Date.now()});
 

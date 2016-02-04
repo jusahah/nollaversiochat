@@ -16,14 +16,12 @@ function DataLayer(mediator) {
 		var s1 = CryptoJS.AES.decrypt(en1, '123').toString(CryptoJS.enc.Utf8);
 		var s2 = CryptoJS.AES.decrypt(en2, '123').toString(CryptoJS.enc.Utf8);
 
-		console.log('----------');
-		console.log(s1 + " vs. " + s2);
-		console.log('----------');
-
 	}
 
 	this.init = function() {
 		//this.testCrypto();
+		return;
+		// FOR TESTING
 		try {
 			fs.outputJsonSync(SECRETS_PATH, {
 				'abcd1234': CryptoJS.AES.encrypt('secret', SECRET_KEY).toString(),
